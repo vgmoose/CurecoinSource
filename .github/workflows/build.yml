@@ -1,0 +1,40 @@
+name: Build CuteCapture
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build GUI Client
+        run: |
+          sudo apt-get install -y qt5-default qt5-qmake qtbase5-dev-tools qttools5-dev-tools libboost-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev libssl-dev libminiupnpc-dev libdb5.3++-dev dh-make build-essential
+          qmake && make
+          chmod +x curecoin-qt
+      - name: Upload GUI
+        uses: actions/upload-artifact@master
+        with:
+          name: curecoin-qt.linux.zip
+          path: ./curecoin-qt
+      - name: Build Headless curecoind
+        run: |
+          cd src && make -f makefile.unix
+          chmod +x curecoind
+      - name: Upload Daemon
+        uses: actions/upload-artifact@master
+        with:
+          name: curecoind.linux.zip
+          path: ./curecoind
+  macos:
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build GUI
+        run: |
+          brew install qt5 boost
+          qmake && make
